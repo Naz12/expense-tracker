@@ -1,64 +1,64 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { 
+  DollarSign, 
+  BarChart3, 
+  PieChart, 
+  Calendar,
   Shield, 
-  Zap, 
-  Database, 
-  Palette, 
-  Code, 
-  Lock,
   Smartphone,
-  Layers
+  TrendingUp,
+  CreditCard
 } from 'lucide-react'
 
 const features = [
   {
-    icon: Shield,
-    title: 'NextAuth.js',
-    description: 'Complete authentication system with multiple providers and session management.',
-    badge: 'Security',
+    icon: DollarSign,
+    title: 'Expense Tracking',
+    description: 'Easily record and categorize your daily expenses with our intuitive interface.',
+    badge: 'Core Feature',
   },
   {
-    icon: Database,
-    title: 'Prisma + SQLite',
-    description: 'Type-safe database access with easy migration to PostgreSQL or MySQL.',
-    badge: 'Database',
+    icon: BarChart3,
+    title: 'Analytics & Reports',
+    description: 'Visualize your spending patterns with detailed charts and monthly reports.',
+    badge: 'Insights',
   },
   {
-    icon: Zap,
-    title: 'tRPC',
-    description: 'End-to-end type safety for your APIs with automatic client generation.',
-    badge: 'API',
+    icon: PieChart,
+    title: 'Category Breakdown',
+    description: 'See exactly where your money goes with detailed category analysis.',
+    badge: 'Analysis',
   },
   {
-    icon: Palette,
-    title: 'shadcn/ui',
-    description: 'Beautiful, accessible components built with Radix UI and Tailwind CSS.',
-    badge: 'UI',
+    icon: Calendar,
+    title: 'Monthly Trends',
+    description: 'Track your financial progress over time with monthly trend analysis.',
+    badge: 'Trends',
   },
   {
-    icon: Code,
-    title: 'TypeScript',
-    description: 'Full type safety across your entire application with strict configuration.',
-    badge: 'Type Safety',
+    icon: CreditCard,
+    title: 'Income Tracking',
+    description: 'Record your income sources and track your total earnings alongside expenses.',
+    badge: 'Income',
   },
   {
     icon: Smartphone,
-    title: 'Mobile First',
-    description: 'Responsive design that works perfectly on all devices and screen sizes.',
-    badge: 'Responsive',
+    title: 'Mobile Responsive',
+    description: 'Access your financial data anywhere with our mobile-optimized interface.',
+    badge: 'Mobile',
   },
   {
-    icon: Lock,
-    title: 'Protected Routes',
-    description: 'Middleware-based route protection with role-based access control.',
+    icon: Shield,
+    title: 'Secure & Private',
+    description: 'Your financial data is protected with enterprise-grade security measures.',
     badge: 'Security',
   },
   {
-    icon: Layers,
-    title: 'State Management',
-    description: 'React Query for server state and Zustand for client state management.',
-    badge: 'State',
+    icon: TrendingUp,
+    title: 'Budget Insights',
+    description: 'Get actionable insights to help you save more and spend smarter.',
+    badge: 'Smart',
   },
 ]
 
@@ -68,10 +68,10 @@ export function FeaturesSection() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-            Everything you need to build
+            Everything you need to manage your finances
           </h2>
           <p className="mb-12 text-lg text-muted-foreground">
-            A complete toolkit for modern web applications with best practices built-in.
+            Powerful features designed to help you take control of your spending and achieve your financial goals.
           </p>
         </div>
 

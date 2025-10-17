@@ -5,8 +5,8 @@ import Link from 'next/link'
 const footerLinks = {
   Product: [
     { name: 'Features', href: '#features' },
-    { name: 'Documentation', href: '/docs' },
-    { name: 'Changelog', href: '/changelog' },
+    { name: 'Dashboard', href: '/dashboard' },
+    { name: 'Analytics', href: '/analytics' },
   ],
   Company: [
     { name: 'About', href: '/about' },
@@ -15,13 +15,13 @@ const footerLinks = {
   ],
   Resources: [
     { name: 'Help Center', href: '/help' },
-    { name: 'Community', href: '/community' },
-    { name: 'Templates', href: '/templates' },
+    { name: 'Getting Started', href: '/getting-started' },
+    { name: 'FAQ', href: '/faq' },
   ],
   Legal: [
     { name: 'Privacy', href: '/privacy' },
     { name: 'Terms', href: '/terms' },
-    { name: 'License', href: '/license' },
+    { name: 'Security', href: '/security' },
   ],
 }
 
@@ -38,9 +38,10 @@ export function Footer() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-6">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <h3 className="mb-4 text-lg font-semibold">Next.js Template</h3>
+            <h3 className="mb-4 text-lg font-semibold">ExpenseTracker</h3>
             <p className="mb-4 text-sm text-muted-foreground">
-              A production-ready Next.js template with all the tools you need to build modern web applications.
+              Take control of your finances with our intuitive expense tracking application. 
+              Track, analyze, and optimize your spending habits.
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social) => (
@@ -82,10 +83,10 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="text-sm text-muted-foreground">
-            © 2024 Next.js Template. All rights reserved.
+            © 2024 ExpenseTracker. All rights reserved.
           </p>
           <p className="text-sm text-muted-foreground">
-            Built with ❤️ using Next.js, TypeScript, and Tailwind CSS
+            Built with ❤️ to help you achieve your financial goals
           </p>
         </div>
       </div>

@@ -2,29 +2,36 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { httpBatchLink } from '@trpc/client'
-import { createTRPCReact } from '@trpc/react-query'
-import { type AppRouter } from '@/server/routers'
+import { api } from '@/lib/trpc-client'
 import { useState } from 'react'
-
-const trpc = createTRPCReact<AppRouter>()
+import superjson from 'superjson'
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient())
+  
   const [trpcClient] = useState(() =>
-    trpc.createClient({
+    api.createClient({
+      transformer: superjson,
       links: [
         httpBatchLink({
           url: '/api/trpc',
+          // Include cookies in requests for authentication
+          fetch(url, options) {
+            return fetch(url, {
+              ...options,
+              credentials: 'include',
+            })
+          },
         }),
       ],
     })
   )
 
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+    <api.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         {children}
       </QueryClientProvider>
-    </trpc.Provider>
+    </api.Provider>
   )
 }

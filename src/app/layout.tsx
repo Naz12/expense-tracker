@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Next.js Full-Stack Template",
-  description: "A production-ready Next.js template with TypeScript, TailwindCSS, shadcn/ui, NextAuth.js, Prisma, tRPC, and more",
+  title: "ExpenseTracker - Take Control of Your Finances",
+  description: "Track your expenses, manage your budget, and gain insights into your spending habits with our intuitive expense tracking application.",
 };
 
 export default function RootLayout({

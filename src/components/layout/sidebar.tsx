@@ -6,7 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { 
   Home, 
-  Users, 
+  Receipt, 
+  Tag,
+  RotateCcw,
+  BarChart3,
   Settings, 
   ChevronLeft, 
   ChevronRight,
@@ -19,7 +22,10 @@ import { signOut } from 'next-auth/react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
-  { name: 'Users', href: '/users', icon: Users },
+  { name: 'Transactions', href: '/transactions', icon: Receipt },
+  { name: 'Categories', href: '/categories', icon: Tag },
+  { name: 'Recurring', href: '/recurring', icon: RotateCcw },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
@@ -37,7 +43,7 @@ export function Sidebar() {
       {/* Header */}
       <div className="flex h-16 items-center justify-between px-4">
         {sidebarOpen && (
-          <h2 className="text-lg font-semibold">Template</h2>
+          <h2 className="text-lg font-semibold">Expense Tracker</h2>
         )}
         <Button
           variant="ghost"
@@ -103,7 +109,7 @@ export function Sidebar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => signOut()}
+            onClick={() => signOut({ callbackUrl: '/auth/signin' })}
             className="mt-2 w-full justify-start"
           >
             <LogOut className="mr-2 h-4 w-4" />

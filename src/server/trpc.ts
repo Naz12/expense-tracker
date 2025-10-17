@@ -4,6 +4,7 @@ import { type Session } from 'next-auth'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
+import superjson from 'superjson'
 
 type CreateContextOptions = {
   session: Session | null
@@ -19,14 +20,27 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts
 
-  const session = await getServerSession(req, res, authOptions)
+  // Handle both Pages API (with res) and App Router fetch adapter (without res)
+  const session = res 
+    ? await getServerSession(req, res, authOptions)
+    : await getServerSession(authOptions)
+
+  // Debug logging
+  if (process.env.NODE_ENV === 'development') {
+    console.log('tRPC Context - Session:', session ? 'Found' : 'Not found')
+    if (session) {
+      console.log('tRPC Context - User ID:', session.user?.id)
+    }
+  }
 
   return createInnerTRPCContext({
     session,
   })
 }
 
-const t = initTRPC.context<typeof createTRPCContext>().create()
+const t = initTRPC.context<typeof createTRPCContext>().create({
+  transformer: superjson,
+})
 
 export const createTRPCRouter = t.router
 
