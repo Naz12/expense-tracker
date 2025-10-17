@@ -40,8 +40,8 @@ export const recurringRouter = createTRPCRouter({
         description: z.string().min(1).max(255),
         type: z.enum(['INCOME', 'EXPENSE']),
         frequency: z.enum(['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']),
-        startDate: z.date(),
-        endDate: z.date().optional(),
+        startDate: z.string().transform((str) => new Date(str)).or(z.date()),
+        endDate: z.string().transform((str) => new Date(str)).or(z.date()).optional(),
         categoryId: z.string(),
       })
     )

@@ -9,7 +9,7 @@ import { compare } from "bcryptjs"
 export const authOptions: NextAuthOptions = {
   // Don't use adapter for credentials authentication
   // adapter: PrismaAdapter(db) as any,
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-for-development',
   debug: process.env.NODE_ENV === 'development',
   providers: [
     CredentialsProvider({

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { TransactionForm } from '@/components/expense/transaction-form'
 import { Plus, Search, Filter } from 'lucide-react'
 import { api } from '@/lib/trpc-client'
@@ -19,7 +19,10 @@ export default function TransactionsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
 
   // Get categories for filter
-  const { data: categories } = api.category.getCategories.useQuery({})
+  const { data: categoriesRaw } = api.category.getCategories.useQuery({})
+  
+  // Handle superjson serialization wrapper
+  const categories = categoriesRaw && typeof categoriesRaw === 'object' && 'json' in categoriesRaw ? categoriesRaw.json : categoriesRaw
 
   // Get transactions with filters
   const { data: transactionsData, refetch } = api.transaction.getTransactions.useQuery({
@@ -53,9 +56,9 @@ export default function TransactionsPage() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Add Transaction</DialogTitle>
-                <p className="text-sm text-muted-foreground">
+                <DialogDescription>
                   Create a new income or expense transaction
-                </p>
+                </DialogDescription>
               </DialogHeader>
               <TransactionForm
                 onSuccess={() => {

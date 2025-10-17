@@ -31,6 +31,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
     if (session) {
       console.log('tRPC Context - User ID:', session.user?.id)
     }
+    console.log('tRPC Context - Request headers:', req.headers)
   }
 
   return createInnerTRPCContext({
@@ -38,9 +39,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   })
 }
 
-const t = initTRPC.context<typeof createTRPCContext>().create({
-  transformer: superjson,
-})
+const t = initTRPC.context<typeof createTRPCContext>().create()
 
 export const createTRPCRouter = t.router
 

@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { CalendarIcon, Plus, Minus } from 'lucide-react'
+import { CalendarIcon, Plus, Minus, Loader2 } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { api } from '@/lib/trpc-client'
@@ -39,6 +39,7 @@ interface TransactionFormProps {
 
 export function TransactionForm({ onSuccess, initialData, transactionId }: TransactionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false)
   const [selectedType, setSelectedType] = useState<'INCOME' | 'EXPENSE'>(
     initialData?.type || 'EXPENSE'
   )
@@ -54,14 +55,28 @@ export function TransactionForm({ onSuccess, initialData, transactionId }: Trans
     },
   })
 
-  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = api.category.getCategories.useQuery({
+  const { data: categoriesRaw, isLoading: categoriesLoading, error: categoriesError } = api.category.getCategories.useQuery({
     type: selectedType,
   })
 
+  // Handle superjson serialization wrapper
+  const categories = categoriesRaw && typeof categoriesRaw === 'object' && 'json' in categoriesRaw ? categoriesRaw.json : categoriesRaw
+
+  const utils = api.useUtils()
+  
   const createTransaction = api.transaction.createTransaction.useMutation({
     onSuccess: () => {
       toast.success('Transaction created successfully')
+      setIsSuccess(true)
       reset()
+      // Invalidate and refetch all transaction-related queries
+      utils.transaction.getTransactions.invalidate()
+      utils.transaction.getRecentTransactions.invalidate()
+      utils.transaction.getMonthlyStats.invalidate()
+      utils.transaction.getCategoryBreakdown.invalidate()
+      utils.transaction.getMonthlyTrends.invalidate()
+      // Reset success state after animation
+      setTimeout(() => setIsSuccess(false), 2000)
       onSuccess?.()
     },
     onError: (error) => {
@@ -72,6 +87,12 @@ export function TransactionForm({ onSuccess, initialData, transactionId }: Trans
   const updateTransaction = api.transaction.updateTransaction.useMutation({
     onSuccess: () => {
       toast.success('Transaction updated successfully')
+      // Invalidate and refetch all transaction-related queries
+      utils.transaction.getTransactions.invalidate()
+      utils.transaction.getRecentTransactions.invalidate()
+      utils.transaction.getMonthlyStats.invalidate()
+      utils.transaction.getCategoryBreakdown.invalidate()
+      utils.transaction.getMonthlyTrends.invalidate()
       onSuccess?.()
     },
     onError: (error) => {
@@ -269,8 +290,26 @@ export function TransactionForm({ onSuccess, initialData, transactionId }: Trans
           </div>
 
           {/* Submit Button */}
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Saving...' : transactionId ? 'Update Transaction' : 'Add Transaction'}
+          <Button 
+            type="submit" 
+            className={`w-full transition-all duration-200 ${
+              isSuccess ? 'bg-green-600 hover:bg-green-700' : ''
+            }`}
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : isSuccess ? (
+              <>
+                <div className="mr-2 h-4 w-4 rounded-full bg-white animate-pulse" />
+                Saved!
+              </>
+            ) : (
+              transactionId ? 'Update Transaction' : 'Add Transaction'
+            )}
           </Button>
         </form>
       </CardContent>

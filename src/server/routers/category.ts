@@ -6,10 +6,10 @@ export const categoryRouter = createTRPCRouter({
     .input(
       z.object({
         type: z.enum(['INCOME', 'EXPENSE']).optional(),
-      })
+      }).optional()
     )
     .query(async ({ ctx, input }) => {
-      const where = input.type ? { type: input.type } : {}
+      const where = input?.type ? { type: input.type } : {}
       
       // Get default categories and user's custom categories
       const [defaultCategories, userCategories] = await Promise.all([

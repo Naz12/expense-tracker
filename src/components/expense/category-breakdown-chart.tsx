@@ -26,7 +26,29 @@ export function CategoryBreakdownChart({
   type = 'EXPENSE', 
   title = 'Category Breakdown' 
 }: CategoryBreakdownChartProps) {
-  const chartData = data.map(item => ({
+  // Handle superjson serialization wrapper
+  const actualData = data && typeof data === 'object' && 'json' in data ? data.json : data
+  
+  if (!Array.isArray(actualData)) {
+    console.error('CategoryBreakdownChart - Data is not an array:', actualData)
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>
+            {type === 'INCOME' ? 'Income' : 'Expense'} distribution by category
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <p>Error: Invalid data format</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  const chartData = actualData.map(item => ({
     name: item.category.name,
     value: item.totalAmount,
     color: item.category.color,

@@ -12,10 +12,10 @@ export const transactionRouter = createTRPCRouter({
         startDate: z.date().optional(),
         endDate: z.date().optional(),
         search: z.string().optional(),
-      })
+      }).optional()
     )
     .query(async ({ ctx, input }) => {
-      const { limit, cursor, type, categoryId, startDate, endDate, search } = input
+      const { limit = 50, cursor, type, categoryId, startDate, endDate, search } = input || {}
 
       const where: any = {
         userId: ctx.session.user.id,
@@ -70,7 +70,7 @@ export const transactionRouter = createTRPCRouter({
         amount: z.number().positive(),
         description: z.string().min(1).max(255),
         type: z.enum(['INCOME', 'EXPENSE']),
-        date: z.date(),
+        date: z.string().transform((str) => new Date(str)).or(z.date()),
         categoryId: z.string(),
       })
     )
@@ -119,7 +119,7 @@ export const transactionRouter = createTRPCRouter({
         amount: z.number().positive().optional(),
         description: z.string().min(1).max(255).optional(),
         type: z.enum(['INCOME', 'EXPENSE']).optional(),
-        date: z.date().optional(),
+        date: z.string().transform((str) => new Date(str)).or(z.date()).optional(),
         categoryId: z.string().optional(),
       })
     )
@@ -196,11 +196,13 @@ export const transactionRouter = createTRPCRouter({
       z.object({
         year: z.number().default(new Date().getFullYear()),
         month: z.number().min(0).max(11).default(new Date().getMonth()),
-      })
+      }).optional()
     )
     .query(async ({ ctx, input }) => {
-      const startDate = new Date(input.year, input.month, 1)
-      const endDate = new Date(input.year, input.month + 1, 0, 23, 59, 59)
+      const year = input?.year ?? new Date().getFullYear()
+      const month = input?.month ?? new Date().getMonth()
+      const startDate = new Date(year, month, 1)
+      const endDate = new Date(year, month + 1, 0, 23, 59, 59)
 
       const [income, expenses] = await Promise.all([
         ctx.db.transaction.aggregate({
@@ -257,15 +259,16 @@ export const transactionRouter = createTRPCRouter({
         type: z.enum(['INCOME', 'EXPENSE']).optional(),
         startDate: z.date().optional(),
         endDate: z.date().optional(),
-      })
+      }).optional()
     )
     .query(async ({ ctx, input }) => {
+
       const where: any = {
         userId: ctx.session.user.id,
       }
 
-      if (input.type) where.type = input.type
-      if (input.startDate || input.endDate) {
+      if (input?.type) where.type = input.type
+      if (input?.startDate || input?.endDate) {
         where.date = {}
         if (input.startDate) where.date.gte = input.startDate
         if (input.endDate) where.date.lte = input.endDate
@@ -303,25 +306,29 @@ export const transactionRouter = createTRPCRouter({
 
       const categoryMap = new Map(categories.map(cat => [cat.id, cat]))
 
-      return breakdown.map(item => ({
+      const result = breakdown.map(item => ({
         categoryId: item.categoryId,
         category: categoryMap.get(item.categoryId),
         totalAmount: Number(item._sum.amount || 0),
         transactionCount: item._count.id,
       })).filter(item => item.category) // Filter out categories that might have been deleted
+
+
+      return result
     }),
 
   getMonthlyTrends: protectedProcedure
     .input(
       z.object({
         months: z.number().min(1).max(24).default(12),
-      })
+      }).optional()
     )
     .query(async ({ ctx, input }) => {
       const trends = []
       const now = new Date()
+      const months = input?.months ?? 12
 
-      for (let i = input.months - 1; i >= 0; i--) {
+      for (let i = months - 1; i >= 0; i--) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
         const startDate = new Date(date.getFullYear(), date.getMonth(), 1)
         const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
@@ -372,14 +379,15 @@ export const transactionRouter = createTRPCRouter({
     .input(
       z.object({
         limit: z.number().min(1).max(20).default(10),
-      })
+      }).optional()
     )
     .query(async ({ ctx, input }) => {
+      const limit = input?.limit ?? 10
       return ctx.db.transaction.findMany({
         where: {
           userId: ctx.session.user.id,
         },
-        take: input.limit,
+        take: limit,
         orderBy: { date: 'desc' },
         include: {
           category: {

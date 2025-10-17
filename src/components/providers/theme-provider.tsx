@@ -12,7 +12,11 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
   }, [])
 
   if (!mounted) {
-    return <>{children}</>
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        {children}
+      </div>
+    )
   }
 
   return <NextThemesProvider {...props}>{children}</NextThemesProvider>

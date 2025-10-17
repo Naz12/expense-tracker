@@ -37,9 +37,12 @@ export default function CategoriesPage() {
   const [editingCategory, setEditingCategory] = useState<any>(null)
   const [selectedType, setSelectedType] = useState<'INCOME' | 'EXPENSE' | 'ALL'>('ALL')
 
-  const { data: categories, refetch } = api.category.getCategories.useQuery({
+  const { data: categoriesRaw, refetch } = api.category.getCategories.useQuery({
     type: selectedType === 'ALL' ? undefined : selectedType,
   })
+
+  // Handle superjson serialization wrapper
+  const categories = categoriesRaw && typeof categoriesRaw === 'object' && 'json' in categoriesRaw ? categoriesRaw.json : categoriesRaw
 
   const createCategory = api.category.createCategory.useMutation({
     onSuccess: () => {
@@ -81,16 +84,22 @@ export default function CategoriesPage() {
   })
 
   const onSubmit = async (data: CategoryFormData) => {
-    if (editingCategory) {
-      await updateCategory.mutateAsync({
-        id: editingCategory.id,
-        ...data,
-      })
-      setEditingCategory(null)
-    } else {
-      await createCategory.mutateAsync(data)
+    try {
+      if (editingCategory) {
+        await updateCategory.mutateAsync({
+          id: editingCategory.id,
+          ...data,
+        })
+        setEditingCategory(null)
+      } else {
+        await createCategory.mutateAsync(data)
+      }
+      reset()
+      setIsAddDialogOpen(false)
+    } catch (error) {
+      // Error is already handled by the mutation's onError callback
+      console.error('Category submission error:', error)
     }
-    reset()
   }
 
   const handleDelete = async (id: string) => {
@@ -129,9 +138,9 @@ export default function CategoriesPage() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Add Category</DialogTitle>
-                <p className="text-sm text-muted-foreground">
+                <DialogDescription>
                   Create a new category for organizing your transactions
-                </p>
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="space-y-2">

@@ -13,33 +13,40 @@ export default function DashboardPage() {
   const currentMonth = currentDate.getMonth()
 
   // Get current month stats
-  const { data: currentMonthStats } = api.transaction.getMonthlyStats.useQuery({
+  const { data: currentMonthStatsRaw } = api.transaction.getMonthlyStats.useQuery({
     year: currentYear,
     month: currentMonth,
   })
 
   // Get previous month stats for comparison
-  const { data: previousMonthStats } = api.transaction.getMonthlyStats.useQuery({
+  const { data: previousMonthStatsRaw } = api.transaction.getMonthlyStats.useQuery({
     year: currentMonth === 0 ? currentYear - 1 : currentYear,
     month: currentMonth === 0 ? 11 : currentMonth - 1,
   })
 
+  // Handle superjson serialization wrapper
+  const currentMonthStats = currentMonthStatsRaw && typeof currentMonthStatsRaw === 'object' && 'json' in currentMonthStatsRaw ? currentMonthStatsRaw.json : currentMonthStatsRaw
+  const previousMonthStats = previousMonthStatsRaw && typeof previousMonthStatsRaw === 'object' && 'json' in previousMonthStatsRaw ? previousMonthStatsRaw.json : previousMonthStatsRaw
+
   // Get category breakdown for expenses
-  const { data: expenseBreakdown } = api.transaction.getCategoryBreakdown.useQuery({
+  const { data: expenseBreakdownRaw } = api.transaction.getCategoryBreakdown.useQuery({
     type: 'EXPENSE',
-    startDate: new Date(currentYear, currentMonth, 1),
-    endDate: new Date(currentYear, currentMonth + 1, 0, 23, 59, 59),
   })
 
   // Get monthly trends
-  const { data: monthlyTrends } = api.transaction.getMonthlyTrends.useQuery({
+  const { data: monthlyTrendsRaw } = api.transaction.getMonthlyTrends.useQuery({
     months: 6,
   })
 
   // Get recent transactions
-  const { data: recentTransactions } = api.transaction.getRecentTransactions.useQuery({
+  const { data: recentTransactionsRaw } = api.transaction.getRecentTransactions.useQuery({
     limit: 5,
   })
+
+  // Handle superjson serialization wrapper for other data
+  const expenseBreakdown = expenseBreakdownRaw && typeof expenseBreakdownRaw === 'object' && 'json' in expenseBreakdownRaw ? expenseBreakdownRaw.json : expenseBreakdownRaw
+  const monthlyTrends = monthlyTrendsRaw && typeof monthlyTrendsRaw === 'object' && 'json' in monthlyTrendsRaw ? monthlyTrendsRaw.json : monthlyTrendsRaw
+  const recentTransactions = recentTransactionsRaw && typeof recentTransactionsRaw === 'object' && 'json' in recentTransactionsRaw ? recentTransactionsRaw.json : recentTransactionsRaw
 
   return (
     <MainLayout>

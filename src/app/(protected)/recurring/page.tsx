@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Calendar } from '@/components/ui/calendar'
@@ -39,9 +39,12 @@ export default function RecurringPage() {
   const [selectedType, setSelectedType] = useState<'INCOME' | 'EXPENSE'>('EXPENSE')
 
   const { data: recurringTransactions, refetch } = api.recurring.getRecurringTransactions.useQuery({})
-  const { data: categories } = api.category.getCategories.useQuery({
+  const { data: categoriesRaw } = api.category.getCategories.useQuery({
     type: selectedType,
   })
+
+  // Handle superjson serialization wrapper
+  const categories = categoriesRaw && typeof categoriesRaw === 'object' && 'json' in categoriesRaw ? categoriesRaw.json : categoriesRaw
 
   const createRecurring = api.recurring.createRecurring.useMutation({
     onSuccess: () => {
@@ -176,9 +179,9 @@ export default function RecurringPage() {
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Add Recurring Transaction</DialogTitle>
-                <p className="text-sm text-muted-foreground">
+                <DialogDescription>
                   Create a new recurring income or expense transaction
-                </p>
+                </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Transaction Type */}

@@ -5,9 +5,9 @@ import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { MoreHorizontal, Edit, Trash2, Plus } from 'lucide-react'
+import { MoreHorizontal, Edit, Trash2, Plus, Loader2 } from 'lucide-react'
 import { api } from '@/lib/trpc-client'
 import { toast } from 'sonner'
 import { TransactionForm } from './transaction-form'
@@ -33,12 +33,40 @@ interface TransactionListProps {
 }
 
 export function TransactionList({ transactions, onTransactionUpdate, showAddButton = false }: TransactionListProps) {
+  // Handle superjson serialization wrapper
+  const actualTransactions = transactions && typeof transactions === 'object' && 'json' in transactions ? transactions.json : transactions
+  
+  if (!Array.isArray(actualTransactions)) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Transactions</CardTitle>
+          <CardDescription>Your latest financial activity</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-32 text-muted-foreground">
+            <p>Error: Invalid data format</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
+  const [deletingTransactionId, setDeletingTransactionId] = useState<string | null>(null)
 
+  const utils = api.useUtils()
+  
   const deleteTransaction = api.transaction.deleteTransaction.useMutation({
     onSuccess: () => {
       toast.success('Transaction deleted successfully')
+      // Invalidate and refetch all transaction-related queries
+      utils.transaction.getTransactions.invalidate()
+      utils.transaction.getRecentTransactions.invalidate()
+      utils.transaction.getMonthlyStats.invalidate()
+      utils.transaction.getCategoryBreakdown.invalidate()
+      utils.transaction.getMonthlyTrends.invalidate()
       onTransactionUpdate?.()
     },
     onError: (error) => {
@@ -48,7 +76,12 @@ export function TransactionList({ transactions, onTransactionUpdate, showAddButt
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this transaction?')) {
-      await deleteTransaction.mutateAsync({ id })
+      setDeletingTransactionId(id)
+      try {
+        await deleteTransaction.mutateAsync({ id })
+      } finally {
+        setDeletingTransactionId(null)
+      }
     }
   }
 
@@ -71,7 +104,7 @@ export function TransactionList({ transactions, onTransactionUpdate, showAddButt
         <div>
           <CardTitle>Transactions</CardTitle>
           <CardDescription>
-            {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+            {actualTransactions.length} transaction{actualTransactions.length !== 1 ? 's' : ''}
           </CardDescription>
         </div>
         {showAddButton && (
@@ -85,9 +118,9 @@ export function TransactionList({ transactions, onTransactionUpdate, showAddButt
             <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>Add Transaction</DialogTitle>
-                <p className="text-sm text-muted-foreground">
+                <DialogDescription>
                   Create a new income or expense transaction
-                </p>
+                </DialogDescription>
               </DialogHeader>
               <TransactionForm
                 onSuccess={() => {
@@ -100,7 +133,7 @@ export function TransactionList({ transactions, onTransactionUpdate, showAddButt
         )}
       </CardHeader>
       <CardContent>
-        {transactions.length === 0 ? (
+        {actualTransactions.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <p>No transactions found</p>
             {showAddButton && (
@@ -116,10 +149,12 @@ export function TransactionList({ transactions, onTransactionUpdate, showAddButt
           </div>
         ) : (
           <div className="space-y-3">
-            {transactions.map((transaction) => (
+            {actualTransactions.map((transaction) => (
               <div
                 key={transaction.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                className={`flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-all duration-200 animate-in fade-in-0 slide-in-from-bottom-2 ${
+                  deletingTransactionId === transaction.id ? 'opacity-50 scale-95' : ''
+                }`}
               >
                 <div className="flex items-center space-x-3">
                   <div
@@ -157,9 +192,19 @@ export function TransactionList({ transactions, onTransactionUpdate, showAddButt
                       <DropdownMenuItem
                         onClick={() => handleDelete(transaction.id)}
                         className="text-destructive"
+                        disabled={deletingTransactionId === transaction.id}
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                        {deletingTransactionId === transaction.id ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </>
+                        )}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -175,9 +220,9 @@ export function TransactionList({ transactions, onTransactionUpdate, showAddButt
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Edit Transaction</DialogTitle>
-            <p className="text-sm text-muted-foreground">
+            <DialogDescription>
               Update your transaction details
-            </p>
+            </DialogDescription>
           </DialogHeader>
           {editingTransaction && (
             <TransactionForm

@@ -18,6 +18,25 @@ interface MonthlyTrendChartProps {
 }
 
 export function MonthlyTrendChart({ data, title = 'Monthly Trends' }: MonthlyTrendChartProps) {
+  // Handle superjson serialization wrapper
+  const actualData = data && typeof data === 'object' && 'json' in data ? data.json : data
+  
+  if (!Array.isArray(actualData)) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>{title}</CardTitle>
+          <CardDescription>Monthly income and expense trends</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-64 text-muted-foreground">
+            <p>Error: Invalid data format</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -48,7 +67,7 @@ export function MonthlyTrendChart({ data, title = 'Monthly Trends' }: MonthlyTre
     return null
   }
 
-  if (data.length === 0) {
+  if (actualData.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -77,7 +96,7 @@ export function MonthlyTrendChart({ data, title = 'Monthly Trends' }: MonthlyTre
       <CardContent>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <LineChart data={actualData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
               <XAxis 
                 dataKey="monthName" 
@@ -121,19 +140,19 @@ export function MonthlyTrendChart({ data, title = 'Monthly Trends' }: MonthlyTre
             <div>
               <p className="text-muted-foreground">Avg Income</p>
               <p className="font-semibold text-green-600">
-                {formatCurrency(data.reduce((sum, item) => sum + item.income, 0) / data.length)}
+                {formatCurrency(actualData.reduce((sum, item) => sum + item.income, 0) / actualData.length)}
               </p>
             </div>
             <div>
               <p className="text-muted-foreground">Avg Expenses</p>
               <p className="font-semibold text-red-600">
-                {formatCurrency(data.reduce((sum, item) => sum + item.expenses, 0) / data.length)}
+                {formatCurrency(actualData.reduce((sum, item) => sum + item.expenses, 0) / actualData.length)}
               </p>
             </div>
             <div>
               <p className="text-muted-foreground">Avg Net</p>
-              <p className={`font-semibold ${data.reduce((sum, item) => sum + item.net, 0) / data.length >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {formatCurrency(data.reduce((sum, item) => sum + item.net, 0) / data.length)}
+              <p className={`font-semibold ${actualData.reduce((sum, item) => sum + item.net, 0) / actualData.length >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {formatCurrency(actualData.reduce((sum, item) => sum + item.net, 0) / actualData.length)}
               </p>
             </div>
           </div>
